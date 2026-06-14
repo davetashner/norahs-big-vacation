@@ -10,9 +10,25 @@ window.NVassets = {
   },
 
   // ⏳ backgrounds/music ready, chapters not built yet
+  pups: {
+    bg: 'assets/images/home-richmond.png'
+    // music: TODO (cozy home / goodbye theme)
+  },
   airport: {
     bg: 'assets/images/richmond-airport.png'
     // music: TODO (airport/airplane theme)
+  },
+  nyc: {
+    bg: 'assets/images/plane-ride-nyc.png'
+    // music: TODO (flight theme)
+  },
+  overnight: {
+    bg: 'assets/images/plane-ride-night.png'
+    // music: TODO (sleepy night-flight theme)
+  },
+  train: {
+    bg: 'assets/images/london-train-station.png'
+    // music: TODO (train theme)
   },
   london: {
     bg: 'assets/images/county-hall-hotel.png',
@@ -37,5 +53,6 @@ window.NVassets = {
     music: 'assets/music/paris-bakery.m4a'
   }
 
-  // ❌ still missing (no bg/music yet): pups, nyc, overnight, train, home
+  // ❌ still missing: 'home' background (richmond airport at evening), and music
+  //    for pups / airport / nyc / overnight / train / home.
 };

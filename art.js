@@ -97,6 +97,24 @@
     return '<circle id="' + id + '" class="sight-marker pod-glow" cx="' + cx + '" cy="' + cy + '" r="' + r + '" style="display:none"/>';
   }
 
+  // ── Painted character sprites (sliced from the lineup sheet) ──
+  // Pixel dims preserve relative scale; SPRITE_SCALE maps px -> viewBox units.
+  var SPRITE = 'assets/images/sprites/';
+  var DIMS = {
+    norah: [204, 628], camile: [225, 479], mommo: [258, 814],
+    daddo: [277, 919], penny: [185, 429], obi: [278, 378]
+  };
+  var SPRITE_SCALE = 0.196; // tune overall character size on screen
+  // Place a sprite by its FEET point (feetX, feetY) in viewBox coords.
+  function sprite(name, feetX, feetY, scaleMul) {
+    var d = DIMS[name]; if (!d) return '';
+    var s = SPRITE_SCALE * (scaleMul || 1);
+    var w = d[0] * s, h = d[1] * s;
+    return '<image href="' + SPRITE + 'char-' + name + '.png" x="' + (feetX - w / 2).toFixed(1)
+      + '" y="' + (feetY - h).toFixed(1) + '" width="' + w.toFixed(1) + '" height="' + h.toFixed(1)
+      + '" preserveAspectRatio="xMidYMax meet"/>';
+  }
+
   // ── London Eye OVERLAY (drawn on top of the painted background) ──
   // Coordinates are in the 400×700 viewBox, which shares the background's 4:7
   // ratio, so hotspots line up with the artwork. Tune positions per background.
@@ -115,11 +133,11 @@
       // hidden Camile badge tucked into the scene (outer g positions; inner is
       // transform-free so it can take the 'spotted' pop animation safely)
       + '<g transform="translate(300,520) scale(0.9)"><g id="hiddenCamile" class="hotspot">' + camileBadge() + '</g></g>'
-      // Norah + Mommo + Camile on the embankment
+      // Norah + Mommo + Camile on the embankment (painted sprites)
       + '<g id="groundPeople">'
-      + '<g transform="translate(120,640)">' + mommo() + '</g>'
-      + '<g transform="translate(174,638) scale(0.95)">' + norah() + '</g>'
-      + '<g transform="translate(210,648) scale(0.7)">' + camile() + '</g>'
+      + sprite('mommo', 96, 666)
+      + sprite('norah', 152, 668)
+      + sprite('camile', 202, 670)
       + '</g>'
       + '</svg>';
   }
