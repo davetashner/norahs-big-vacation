@@ -300,6 +300,13 @@
   function boot() {
     byId('passportBtn').onclick = function () { audio.unlock(); audio.play('tap'); openPassport(); };
     byId('closePassport').onclick = function () { audio.play('tap'); closePassport(); };
+    byId('resetBtn').onclick = function () {
+      audio.play('tap');
+      if (window.confirm('Start the whole trip over? This clears all your stamps.')) {
+        save = { stamps: {}, camiles: {} }; persist();
+        closePassport(); loadChapter(0);
+      }
+    };
     byId('celebratePassport').onclick = function () { audio.play('tap'); byId('celebrate').style.display = 'none'; openPassport(); };
     byId('muteBtn').onclick = function () { audio.toggleMute(); refreshMute(); };
     refreshMute();
