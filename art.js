@@ -101,14 +101,16 @@
   // Pixel dims preserve relative scale; SPRITE_SCALE maps px -> viewBox units.
   var SPRITE = 'assets/images/sprites/';
   var DIMS = {
-    norah: [204, 628], camile: [225, 479], mommo: [258, 814],
+    norah: [204, 628], camile: [268, 617], mommo: [258, 814],
     daddo: [277, 919], penny: [185, 429], obi: [278, 378]
   };
   var SPRITE_SCALE = 0.196; // tune overall character size on screen
+  // per-character display scale (corrects for different sprite framing)
+  var BASE = { camile: 0.78 };
   // Place a sprite by its FEET point (feetX, feetY) in viewBox coords.
   function sprite(name, feetX, feetY, scaleMul) {
     var d = DIMS[name]; if (!d) return '';
-    var s = SPRITE_SCALE * (scaleMul || 1);
+    var s = SPRITE_SCALE * (BASE[name] || 1) * (scaleMul || 1);
     var w = d[0] * s, h = d[1] * s;
     return '<image href="' + SPRITE + 'char-' + name + '.png" x="' + (feetX - w / 2).toFixed(1)
       + '" y="' + (feetY - h).toFixed(1) + '" width="' + w.toFixed(1) + '" height="' + h.toFixed(1)
