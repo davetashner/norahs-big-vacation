@@ -21,11 +21,19 @@ ferris-wheel **passport stamp**. Progress saves to `localStorage`.
 ## Files (no build step, plain `<script>` globals)
 | File | Role |
 | --- | --- |
-| `index.html` | Markup + overlays (passport, celebration) |
-| `styles.css` | Mobile-first layout, animations |
-| `art.js` | `window.NVart` — all cartoon art as inline SVG (people, scene, London Eye, pods) |
-| `audio.js` | `window.NVaudio` — SFX synthesized with Web Audio (no audio files) |
+| `index.html` | Markup: `#scene` (painted `#bg` + SVG `#stage` overlay), `<audio>`, overlays |
+| `styles.css` | Mobile-first layout, animations, scene zoom |
+| `art.js` | `window.NVart` — SVG **overlay** (tap hotspots, guide rings, characters) |
+| `assets.js` | `window.NVassets` — manifest: chapter → background image + music file |
+| `audio.js` | `window.NVaudio` — Web Audio SFX **+** looping `<audio>` music; mute controls both |
 | `game.js` | `CHAPTERS`/`SIGHTS` data, the London Eye state machine, passport, save |
+
+## Assets
+`assets/images/*.png` are full **painted backgrounds** (portrait 4:7, same ratio as
+the 400×700 SVG viewBox, so tap hotspots line up). `assets/music/*.m4a` are looping
+chapter themes. Wire a new file by adding it to `assets/` and referencing it in
+`assets.js`. The background and overlay live in `#scene` and zoom together, so
+hotspot taps stay aligned with the artwork even during the "ride up" zoom.
 
 ## Adding the other chapters
 `game.js` is structured around a phase state machine and a `CHAPTERS` array. To

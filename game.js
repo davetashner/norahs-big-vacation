@@ -1,10 +1,13 @@
 /* game.js — Norah's Big Vacation
    Vertical slice: Chapter 5 — The London Eye.
+   Painted background + transparent SVG overlay (hotspots + characters) + music.
    Tap-only, fully offline. Architected so more chapters slot in later. */
 (function () {
   'use strict';
 
-  var art = window.NVart, audio = window.NVaudio;
+  var art = window.NVart, audio = window.NVaudio, assets = window.NVassets || {};
+
+  var CHAPTER_ID = 'londoneye';
 
   // ── All 12 chapters (only 'londoneye' is playable in this slice) ──
   var CHAPTERS = [
@@ -23,8 +26,8 @@
   ];
 
   var SIGHTS = [
-    { id: 'sight-bigben', label: 'Big Ben', icon: '🕰️' },
-    { id: 'sight-bus',    label: 'Red bus', icon: '🚌' },
+    { id: 'sight-bigben', label: 'Big Ben',   icon: '🕰️' },
+    { id: 'sight-hotel',  label: 'Our hotel', icon: '🏨' },
     { id: 'sight-boat',   label: 'River boat', icon: '⛵' }
   ];
 
@@ -39,6 +42,7 @@
 
   // ── DOM refs ──
   var stage = document.getElementById('stage');
+  var sceneEl = document.getElementById('scene');
   var narration = document.getElementById('narration');
   var actionBtn = document.getElementById('actionBtn');
   var sightsBox = document.getElementById('sights');
@@ -46,17 +50,15 @@
   var app = document.getElementById('app');
 
   // ── Chapter state ──
-  var phase = 'intro';            // intro -> board -> spin -> spot -> done
-  var pods = [], ourPod = null, podPeople = null, spokes = null;
-  var rot = 0, targetRot = 0;
-  var SPIN_TOTAL = -Math.PI;      // half turn lifts the bottom pod to the top
-  var TAPS = 5, tapDelta = SPIN_TOTAL / TAPS;
+  var phase = 'intro';   // intro -> board -> ride -> spot -> done
   var spotted = {};
-  var camileFound = !!save.camiles.londoneye;
+  var camileFound = !!save.camiles[CHAPTER_ID];
 
   // ── Helpers ──
-  function say(text) { narration.style.display = ''; narration.innerHTML = text; }
+  function say(t) { narration.style.display = ''; narration.innerHTML = t; }
   function hideSay() { narration.style.display = 'none'; }
+  function show(id) { var el = document.getElementById(id); if (el) el.style.display = ''; }
+  function hide(id) { var el = document.getElementById(id); if (el) el.style.display = 'none'; }
 
   function setAction(label, fn) {
     if (!label) { actionBtn.style.display = 'none'; actionBtn.onclick = null; return; }
@@ -79,42 +81,7 @@
 
   function updateProgress() {
     var n = 0; for (var k in spotted) if (spotted[k]) n++;
-    var parts = ['Sights ' + n + '/' + SIGHTS.length];
-    parts.push(camileFound ? 'Camile ✓' : 'Camile …');
-    progressPill.textContent = parts.join('  •  ');
-  }
-
-  // ── Wheel animation ──
-  function podAngle(i) { return Math.PI / 2 + (i / art.POD_COUNT) * Math.PI * 2 + rot; }
-
-  function layoutPods() {
-    var W = art.WHEEL;
-    for (var i = 0; i < pods.length; i++) {
-      var a = podAngle(i);
-      var x = W.cx + W.r * Math.cos(a), y = W.cy + W.r * Math.sin(a);
-      pods[i].setAttribute('transform', 'translate(' + x.toFixed(1) + ',' + y.toFixed(1) + ')');
-    }
-    if (spokes) spokes.setAttribute('transform', 'rotate(' + (rot * 180 / Math.PI).toFixed(1) + ' ' + W.cx + ' ' + W.cy + ')');
-  }
-
-  function applyRise() {
-    var f = Math.min(1, Math.max(0, rot / SPIN_TOTAL)); // 0 at bottom -> 1 at top
-    var starsEl = document.getElementById('stars');
-    var sunEl = document.getElementById('sunGlow');
-    if (starsEl) starsEl.setAttribute('opacity', (f * 0.9).toFixed(2));
-    if (sunEl) sunEl.setAttribute('opacity', (0.9 * (1 - f)).toFixed(2));
-  }
-
-  function tick() {
-    rot += (targetRot - rot) * 0.12;
-    layoutPods();
-    applyRise();
-    // arrival at the top
-    if (phase === 'spin' && Math.abs(targetRot - SPIN_TOTAL) < 0.001 && Math.abs(rot - SPIN_TOTAL) < 0.02) {
-      rot = SPIN_TOTAL; layoutPods(); applyRise();
-      enterSpot();
-    }
-    requestAnimationFrame(tick);
+    progressPill.textContent = 'Sights ' + n + '/' + SIGHTS.length + '  •  ' + (camileFound ? 'Camile ✓' : 'Camile …');
   }
 
   // ── Phases ──
@@ -126,58 +93,45 @@
 
   function enterBoard() {
     phase = 'board';
-    say("Tap the <b>glowing pod</b> at the bottom to climb aboard!");
+    say("Tap the giant <b>London Eye</b> to ride up high! 🎡");
     setAction(null);
-    ourPod.classList.add('hotspot'); // glow/hint animate via opacity (see .pod-glow)
-    ourPod.style.cursor = 'pointer';
-    ourPod.onclick = function () {
+    show('mark-ride');
+    var wheel = document.getElementById('ride-wheel');
+    wheel.onclick = function () {
+      if (phase !== 'board') return;
+      hide('mark-ride');
+      wheel.onclick = null;
       audio.play('collect');
-      var hint = document.getElementById('podHint');
-      if (hint) hint.style.display = 'none';
-      ourPod.onclick = null;
-      // hide the people on the ground, show them inside the pod
-      var gp = document.getElementById('groundPeople');
-      if (gp) gp.style.display = 'none';
-      if (podPeople) podPeople.style.display = '';
-      enterSpin();
+      enterRide();
     };
   }
 
-  var spinTaps = 0;
-  function enterSpin() {
-    phase = 'spin';
-    spinTaps = 0;
-    say("All aboard! 🎡 <b>Tap the wheel</b> to ride up high!");
-    var wheelEl = document.getElementById('wheel');
-    wheelEl.classList.add('hotspot');
-    wheelEl.style.cursor = 'pointer';
-    wheelEl.onclick = function () {
-      if (phase !== 'spin') return;
-      audio.play('spin');
-      spinTaps++;
-      targetRot = Math.max(SPIN_TOTAL, targetRot + tapDelta);
-      if (spinTaps < TAPS) say("Up we go! 🎡 Keep tapping… (" + spinTaps + "/" + TAPS + ")");
-      else say("Almost at the top! ☁️");
-    };
+  function enterRide() {
+    phase = 'ride';
+    say("Wheee! Up we go! 🎡☁️");
+    audio.play('spin');
+    // zoom toward the top of the wheel, then settle back — works for any bg
+    sceneEl.style.transformOrigin = '46% 36%';
+    sceneEl.style.transform = 'scale(1.85)';
+    // characters are "in the pod" now — fade them from the embankment
+    hide('groundPeople');
+    setTimeout(function () { sceneEl.style.transform = 'scale(1)'; }, 1300);
+    setTimeout(enterSpot, 2300);
   }
 
   function enterSpot() {
     if (phase === 'spot') return;
     phase = 'spot';
-    var wheelEl = document.getElementById('wheel');
-    if (wheelEl) { wheelEl.onclick = null; wheelEl.style.cursor = ''; }
-    say("Wow, look how high! 🌆<br><b>Tap the London sights</b> you can see!");
+    say("Wow, look at the view! 🌆<br><b>Tap the London sights</b> you can see!");
     buildSightsList();
-    // make each sight tappable
     SIGHTS.forEach(function (s) {
+      show('mark-' + s.id);
       var el = document.getElementById(s.id);
       if (!el) return;
-      el.classList.add('pulse');
       el.onclick = function () {
         if (spotted[s.id]) return;
         spotted[s.id] = true;
-        el.classList.remove('pulse');
-        el.classList.add('spotted');
+        hide('mark-' + s.id);
         audio.play('collect');
         toast(el, s.icon + ' ' + s.label + '!', '#fff');
         markSight(s.id);
@@ -208,10 +162,8 @@
     var all = SIGHTS.every(function (s) { return spotted[s.id]; });
     if (all && phase !== 'done') {
       phase = 'done';
-      if (camileFound) say("You spotted everything! 🎉");
-      else say("Great spotting! 🎉 Pssst… can you still find the <b>hidden Camile</b>? 🔎");
-      setTimeout(completeChapter, camileFound ? 700 : 250);
-      if (!camileFound) setAction('Finish chapter', completeChapter);
+      if (camileFound) { say("You spotted everything! 🎉"); setTimeout(completeChapter, 700); }
+      else { say("Great spotting! 🎉 Pssst… can you still find the <b>hidden Camile</b>? 🔎"); setAction('Finish chapter', completeChapter); }
     }
   }
 
@@ -219,11 +171,11 @@
   function wireHiddenCamile() {
     var hc = document.getElementById('hiddenCamile');
     if (!hc) return;
-    if (camileFound) { hc.style.display = ''; hc.classList.add('spotted'); }
+    if (camileFound) hc.classList.add('spotted');
     hc.onclick = function () {
       if (camileFound) return;
       camileFound = true;
-      save.camiles.londoneye = true; persist();
+      save.camiles[CHAPTER_ID] = true; persist();
       hc.classList.add('spotted');
       audio.play('found');
       toast(hc, '✨ Found Camile!', '#ffd25a');
@@ -236,7 +188,7 @@
     setAction(null);
     hideSay();
     sightsBox.style.display = 'none';
-    save.stamps.londoneye = true; persist();
+    save.stamps[CHAPTER_ID] = true; persist();
     audio.play('stamp');
     setTimeout(function () { audio.play('win'); }, 250);
     showCelebrate();
@@ -263,7 +215,7 @@
     document.getElementById('celebrateTitle').textContent = 'London Eye — Done!';
     var extra = camileFound ? ' and found the hidden Camile' : '';
     document.getElementById('celebrateText').innerHTML =
-      'Norah rode the London Eye, spotted Big Ben, a red bus and a river boat' + extra + '. 🎉<br>You earned the <b>Ferris-wheel stamp!</b>';
+      'Norah rode the London Eye, spotted Big Ben, the hotel and a river boat' + extra + '. 🎉<br>You earned the <b>Ferris-wheel stamp!</b>';
     var nextBtn = document.getElementById('celebrateNext');
     nextBtn.textContent = 'More chapters soon…';
     nextBtn.onclick = function () { audio.play('tap'); openPassport(); document.getElementById('celebrate').style.display = 'none'; };
@@ -277,34 +229,21 @@
   function boot() {
     stage.innerHTML = art.scene();
 
-    // build pods
-    var layer = document.getElementById('podsLayer');
-    var podStr = '';
-    for (var i = 0; i < art.POD_COUNT; i++) {
-      var isOurs = (i === art.OUR_POD);
-      podStr += art.podSVG(0, 0, isOurs, isOurs);
-    }
-    layer.innerHTML = podStr;
-    pods = Array.prototype.slice.call(layer.querySelectorAll('.pod'));
-    ourPod = pods[art.OUR_POD];
-    podPeople = document.getElementById('podPeople');
-    spokes = document.getElementById('spokes');
-    layoutPods();
-    applyRise();
+    // background + music for this chapter
+    var A = assets[CHAPTER_ID] || {};
+    if (A.bg) document.getElementById('bg').style.backgroundImage = 'url("' + A.bg + '")';
+    if (A.music) audio.setMusic(A.music); // plays on first user gesture (autoplay policy)
 
     wireHiddenCamile();
     updateProgress();
 
-    // top bar buttons
     document.getElementById('passportBtn').onclick = function () { audio.unlock(); audio.play('tap'); openPassport(); };
     document.getElementById('closePassport').onclick = function () { audio.play('tap'); closePassport(); };
     document.getElementById('celebratePassport').onclick = function () { audio.play('tap'); document.getElementById('celebrate').style.display = 'none'; openPassport(); };
     document.getElementById('muteBtn').onclick = function () { audio.toggleMute(); refreshMute(); };
     refreshMute();
 
-    // if already completed before, let them replay but show stamp earned in passport
     enterIntro();
-    requestAnimationFrame(tick);
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);

@@ -88,43 +88,38 @@
       + '</g>';
   }
 
-  // ── Full scene (pods are added later by game.js) ────────────────
+  // Invisible tappable region over a painted feature.
+  function hotspotRect(id, x, y, w, h) {
+    return '<rect id="' + id + '" class="hotspot-rect" x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '"/>';
+  }
+  // Pulsing gold ring marking where to tap (hidden until its phase).
+  function marker(id, cx, cy, r) {
+    return '<circle id="' + id + '" class="sight-marker pod-glow" cx="' + cx + '" cy="' + cy + '" r="' + r + '" style="display:none"/>';
+  }
+
+  // ── London Eye OVERLAY (drawn on top of the painted background) ──
+  // Coordinates are in the 400×700 viewBox, which shares the background's 4:7
+  // ratio, so hotspots line up with the artwork. Tune positions per background.
   function scene() {
     return '<svg viewBox="0 0 ' + VIEW_W + ' ' + VIEW_H + '" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">'
-      + defs()
-      // sky
-      + '<rect id="sky" x="0" y="0" width="400" height="560" fill="url(#skyGrad)"/>'
-      + '<circle id="sunGlow" cx="330" cy="150" r="120" fill="url(#sunGrad)" opacity="0.9"/>'
-      + '<g id="stars" opacity="0">' + stars() + '</g>'
-      // far skyline across the river
-      + skyline()
-      // Parliament + Big Ben (Big Ben is a tappable sight)
-      + parliament()
-      // the River Thames
-      + '<rect x="0" y="452" width="400" height="120" fill="url(#riverGrad)"/>'
-      + '<g id="riverShine" opacity="0.5">'
-      + '<ellipse cx="120" cy="500" rx="70" ry="5" fill="#fff" opacity="0.25"/>'
-      + '<ellipse cx="300" cy="530" rx="90" ry="6" fill="#fff" opacity="0.2"/>'
-      + '</g>'
-      // bridge with a tappable red bus
-      + bridge()
-      // a tappable boat on the river
-      + boat()
-      // County Hall hotel (with the hidden Camile in a window)
-      + hotel()
-      // the London Eye wheel
-      + wheel()
-      // foreground embankment
-      + '<rect x="0" y="560" width="400" height="140" fill="#3a4a63"/>'
-      + '<rect x="0" y="560" width="400" height="10" fill="#5a6c88"/>'
-      + '<g id="railings" stroke="#7c8cab" stroke-width="3">'
-      + railings()
-      + '</g>'
-      // people standing on the embankment (hidden once they board)
+      // tap targets over painted landmarks
+      + hotspotRect('ride-wheel', 110, 150, 150, 245)
+      + hotspotRect('sight-bigben', 48, 380, 60, 100)
+      + hotspotRect('sight-hotel', 296, 388, 100, 95)
+      + hotspotRect('sight-boat', 14, 460, 96, 56)
+      // guide rings
+      + marker('mark-ride', 185, 262, 70)
+      + marker('mark-sight-bigben', 78, 428, 30)
+      + marker('mark-sight-hotel', 346, 432, 36)
+      + marker('mark-sight-boat', 62, 487, 28)
+      // hidden Camile badge tucked into the scene (outer g positions; inner is
+      // transform-free so it can take the 'spotted' pop animation safely)
+      + '<g transform="translate(300,520) scale(0.9)"><g id="hiddenCamile" class="hotspot">' + camileBadge() + '</g></g>'
+      // Norah + Mommo + Camile on the embankment
       + '<g id="groundPeople">'
-      + '<g transform="translate(96,612)">' + mommo() + '</g>'
-      + '<g transform="translate(150,610) scale(0.95)">' + norah() + '</g>'
-      + '<g transform="translate(186,620) scale(0.7)">' + camile() + '</g>'
+      + '<g transform="translate(120,640)">' + mommo() + '</g>'
+      + '<g transform="translate(174,638) scale(0.95)">' + norah() + '</g>'
+      + '<g transform="translate(210,648) scale(0.7)">' + camile() + '</g>'
       + '</g>'
       + '</svg>';
   }

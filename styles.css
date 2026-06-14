@@ -36,9 +36,27 @@ html, body {
   background: #0c1733;
 }
 
-/* ── Scene ── */
+/* ── Scene (painted bg + svg overlay, zoomed together) ── */
+#scene {
+  position: absolute; inset: 0;
+  transform-origin: 50% 50%;
+  transition: transform 1.1s ease;
+  will-change: transform;
+}
+#bg {
+  position: absolute; inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: #0c1733;
+}
 #stage { position: absolute; inset: 0; }
 #stage svg { width: 100%; height: 100%; display: block; }
+
+/* invisible-but-tappable region over a painted feature */
+.hotspot-rect { fill: transparent; pointer-events: all; cursor: pointer; }
+/* pulsing ring that marks where to tap */
+.sight-marker { fill: none; stroke: var(--gold); stroke-width: 4; pointer-events: none; }
 
 /* Tappable hotspots */
 .hotspot { cursor: pointer; }
