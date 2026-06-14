@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1b2a4a">
+<title>Norah's Big Vacation</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ════════ Game root ════════ -->
+<div id="app">
+
+  <!-- Scene (SVG injected by game.js) -->
+  <div id="stage" aria-label="London Eye scene"></div>
+
+  <!-- Top bar: passport + mute -->
+  <div id="topbar">
+    <button id="passportBtn" class="iconbtn" aria-label="Open passport" title="Passport">📖</button>
+    <div id="progressPill" aria-live="polite"></div>
+    <button id="muteBtn" class="iconbtn" aria-label="Toggle sound" title="Sound">🔊</button>
+  </div>
+
+  <!-- Narration / prompt -->
+  <div id="narration" aria-live="polite"></div>
+
+  <!-- Action button (Let's go / Next, etc.) -->
+  <button id="actionBtn" class="bigbtn" style="display:none"></button>
+
+  <!-- Sights checklist (during the "spot the sights" step) -->
+  <div id="sights" style="display:none"></div>
+
+  <!-- Passport overlay -->
+  <div id="passport" class="overlay" style="display:none" role="dialog" aria-label="Passport">
+    <div class="passport-book">
+      <h2>Norah&apos;s Passport</h2>
+      <p class="passport-sub">Collect a stamp on every adventure!</p>
+      <div id="stampGrid"></div>
+      <button id="closePassport" class="bigbtn">Close</button>
+    </div>
+  </div>
+
+  <!-- Celebration overlay -->
+  <div id="celebrate" class="overlay" style="display:none" role="dialog" aria-label="Chapter complete">
+    <div class="celebrate-card">
+      <div class="confetti" aria-hidden="true"></div>
+      <div id="celebrateStamp"></div>
+      <h2 id="celebrateTitle">Chapter Complete!</h2>
+      <p id="celebrateText"></p>
+      <button id="celebratePassport" class="bigbtn">See my Passport</button>
+      <button id="celebrateNext" class="bigbtn ghost"></button>
+    </div>
+  </div>
+
+</div>
+
+<script src="art.js"></script>
+<script src="audio.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
