@@ -15,8 +15,8 @@ window.NVassets = {
     // music: TODO (cozy home / goodbye theme)
   },
   airport: {
-    bg: 'assets/images/richmond-airport.png'
-    // music: TODO (airport/airplane theme)
+    bg: 'assets/images/richmond-airport.png',
+    music: 'assets/music/airport-music.mp3'
   },
   nyc: {
     bg: 'assets/images/plane-ride-nyc.png'
@@ -53,11 +53,12 @@ window.NVassets = {
     music: 'assets/music/paris-bakery.m4a'
   },
   home: {
-    // placeholder: reuse the daytime airport until a richmond-airport-evening
-    // (reunion) background is generated. No music yet.
-    bg: 'assets/images/richmond-airport.png'
+    // placeholder bg: reuse the daytime airport until a richmond-airport-evening
+    // (reunion) background is generated.
+    bg: 'assets/images/richmond-airport.png',
+    music: 'assets/music/richmond-home.mp3'
   }
 
   // ❌ still missing: a dedicated 'home' evening/reunion background, and music
-  //    for pups / airport / nyc / overnight / train / home.
+  //    for pups / nyc / overnight / train.
 };
