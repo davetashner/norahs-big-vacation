@@ -126,13 +126,14 @@
 
   function enterBoard() {
     phase = 'board';
-    say("Tap the <b>glowing pod</b> to climb aboard!");
+    say("Tap the <b>glowing pod</b> at the bottom to climb aboard!");
     setAction(null);
-    ourPod.classList.add('hotspot', 'pulse');
+    ourPod.classList.add('hotspot'); // glow/hint animate via opacity (see .pod-glow)
     ourPod.style.cursor = 'pointer';
     ourPod.onclick = function () {
       audio.play('collect');
-      ourPod.classList.remove('pulse');
+      var hint = document.getElementById('podHint');
+      if (hint) hint.style.display = 'none';
       ourPod.onclick = null;
       // hide the people on the ground, show them inside the pod
       var gp = document.getElementById('groundPeople');

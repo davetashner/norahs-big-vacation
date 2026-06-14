@@ -232,8 +232,10 @@
     }
     // a soft blue wash like the photo's uplighting
     s += '<rect x="250" y="372" width="150" height="100" fill="#5fa8e6" opacity="0.12"/>';
-    // hidden Camile badge tucked into one window
-    s += '<g id="hiddenCamile" class="hotspot" transform="translate(360,425) scale(0.85)">' + camileBadge() + '</g>';
+    // hidden Camile badge tucked into one window.
+    // Outer <g> positions; inner #hiddenCamile is transform-free so it can take
+    // the 'spotted' pop animation without losing its placement.
+    s += '<g transform="translate(360,425) scale(0.85)"><g id="hiddenCamile" class="hotspot">' + camileBadge() + '</g></g>';
     s += '</g>';
     return s;
   }
@@ -275,9 +277,9 @@
   // One gondola pod. cx,cy = center; highlight = our pod.
   function podSVG(cx, cy, highlight, withPeople) {
     var s = '<g class="pod" transform="translate(' + cx + ',' + cy + ')">';
-    if (highlight) s += '<circle cx="0" cy="0" r="26" fill="url(#podGlow)"/>';
-    s += '<ellipse cx="0" cy="0" rx="15" ry="9" fill="' + (highlight ? '#eaf6ff' : '#cfe2f0') + '" stroke="#9fc4dd" stroke-width="1.5"/>';
-    s += '<ellipse cx="0" cy="-1" rx="11" ry="6" fill="#bfe6ff" opacity="0.9"/>';
+    if (highlight) s += '<circle class="pod-glow" cx="0" cy="0" r="34" fill="url(#podGlow)"/>';
+    s += '<ellipse cx="0" cy="0" rx="15" ry="9" fill="' + (highlight ? '#ffe7a6' : '#cfe2f0') + '" stroke="' + (highlight ? '#ffb938' : '#9fc4dd') + '" stroke-width="' + (highlight ? 2.5 : 1.5) + '"/>';
+    s += '<ellipse cx="0" cy="-1" rx="11" ry="6" fill="' + (highlight ? '#fff3cf' : '#bfe6ff') + '" opacity="0.9"/>';
     if (withPeople) {
       s += '<g id="podPeople" style="display:none">'
         + '<g transform="translate(-5,4) scale(0.34)">' + mommo() + '</g>'
@@ -285,6 +287,9 @@
         + '<g transform="translate(9,4) scale(0.26)">' + camile() + '</g>'
         + '</g>';
     }
+    // bobbing finger hint (opacity-animated; never uses transform so the pod's
+    // translate is preserved). Hidden once aboard.
+    if (highlight) s += '<text id="podHint" class="pod-glow" x="0" y="38" text-anchor="middle" font-size="24">👆</text>';
     s += '</g>';
     return s;
   }
