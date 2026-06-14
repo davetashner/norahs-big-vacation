@@ -10,13 +10,15 @@ directly in a browser, or deploy the repo as static hosting (GitHub Pages /
 Vercel / Netlify).
 
 ## Status
-**Vertical slice:** Chapter 5 — *The London Eye* is fully playable. The other 11
-chapters appear (locked) in the passport and are not built yet.
+**All 12 chapters playable** end to end (data-driven). Chapter 5 (London Eye) has
+a bonus "ride up" zoom. Backgrounds + characters are in; a few music tracks and a
+dedicated reunion background are still TODO (see `assets.js`).
 
 ## How it plays
-Everything is a tap. Board the glowing pod → tap the wheel to ride up → tap the
-London sights (Big Ben, red bus, river boat) → find the hidden Camile → earn the
-ferris-wheel **passport stamp**. Progress saves to `localStorage`.
+Everything is a tap. Each chapter: read the intro → tap the themed items (paw
+prints, clouds, swans, croissants…) → find the hidden Camile → earn a **passport
+stamp** → on to the next chapter. The passport (📖) shows all stamps and doubles
+as a chapter picker. Progress saves to `localStorage`.
 
 ## Files (no build step, plain `<script>` globals)
 | File | Role |

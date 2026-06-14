@@ -58,6 +58,13 @@ html, body {
 /* pulsing ring that marks where to tap */
 .sight-marker { fill: none; stroke: var(--gold); stroke-width: 4; pointer-events: none; }
 
+/* collectible item tokens */
+.item { cursor: pointer; }
+.item-ring { fill: rgba(255,255,255,0.35); stroke: var(--gold); stroke-width: 4; pointer-events: none; }
+.item text { pointer-events: none; }
+.item-hit { fill: transparent; pointer-events: all; }   /* whole-token tap target */
+.item.collected { display: none; }
+
 /* Tappable hotspots */
 .hotspot { cursor: pointer; }
 .pulse { animation: pulse 1.2s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }

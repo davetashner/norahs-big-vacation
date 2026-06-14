@@ -51,8 +51,13 @@ window.NVassets = {
   treats: {
     bg: 'assets/images/paris-boulangerie.png',
     music: 'assets/music/paris-bakery.m4a'
+  },
+  home: {
+    // placeholder: reuse the daytime airport until a richmond-airport-evening
+    // (reunion) background is generated. No music yet.
+    bg: 'assets/images/richmond-airport.png'
   }
 
-  // ❌ still missing: 'home' background (richmond airport at evening), and music
+  // ❌ still missing: a dedicated 'home' evening/reunion background, and music
   //    for pups / airport / nyc / overnight / train / home.
 };

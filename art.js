@@ -115,31 +115,41 @@
       + '" preserveAspectRatio="xMidYMax meet"/>';
   }
 
-  // ── London Eye OVERLAY (drawn on top of the painted background) ──
-  // Coordinates are in the 400×700 viewBox, which shares the background's 4:7
-  // ratio, so hotspots line up with the artwork. Tune positions per background.
-  function scene() {
-    return '<svg viewBox="0 0 ' + VIEW_W + ' ' + VIEW_H + '" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">'
-      // tap targets over painted landmarks
-      + hotspotRect('ride-wheel', 110, 150, 150, 245)
-      + hotspotRect('sight-bigben', 48, 380, 60, 100)
-      + hotspotRect('sight-hotel', 296, 388, 100, 95)
-      + hotspotRect('sight-boat', 14, 460, 96, 56)
-      // guide rings
-      + marker('mark-ride', 185, 262, 70)
-      + marker('mark-sight-bigben', 78, 428, 30)
-      + marker('mark-sight-hotel', 346, 432, 36)
-      + marker('mark-sight-boat', 62, 487, 28)
-      // hidden Camile badge tucked into the scene (outer g positions; inner is
-      // transform-free so it can take the 'spotted' pop animation safely)
-      + '<g transform="translate(300,520) scale(0.9)"><g id="hiddenCamile" class="hotspot">' + camileBadge() + '</g></g>'
-      // Norah + Mommo + Camile on the embankment (painted sprites)
-      + '<g id="groundPeople">'
-      + sprite('mommo', 96, 666)
-      + sprite('norah', 152, 668)
-      + sprite('camile', 202, 670)
-      + '</g>'
-      + '</svg>';
+  // ── Generic chapter OVERLAY, built from chapter data ──
+  // Drawn on top of the painted background. Coordinates are in the 400×700
+  // viewBox, which shares the background's 4:7 ratio. ch = chapter config:
+  //   { ride, items:[{icon,x,y}], camile:{x,y}, chars:[{name,x,y,scale}] }
+  function scene(ch) {
+    ch = ch || {};
+    var s = '<svg viewBox="0 0 ' + VIEW_W + ' ' + VIEW_H + '" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">';
+
+    // optional "ride" tap target (London Eye)
+    if (ch.ride) s += hotspotRect('ride-wheel', 110, 150, 150, 245) + marker('mark-ride', 185, 262, 70);
+
+    // characters along the bottom
+    s += '<g id="chars">';
+    (ch.chars || []).forEach(function (c) { s += sprite(c.name, c.x, c.y != null ? c.y : 668, c.scale); });
+    s += '</g>';
+
+    // collectible items (emoji tokens with a pulsing ring)
+    s += '<g id="items">';
+    (ch.items || []).forEach(function (it, i) {
+      s += '<g class="item hotspot" id="item-' + i + '">'
+        + '<circle class="item-ring pod-glow" cx="' + it.x + '" cy="' + it.y + '" r="26"/>'
+        + '<text x="' + it.x + '" y="' + (it.y + 13) + '" text-anchor="middle" font-size="36">' + it.icon + '</text>'
+        + '<circle class="item-hit" cx="' + it.x + '" cy="' + it.y + '" r="30"/>'
+        + '</g>';
+    });
+    s += '</g>';
+
+    // hidden Camile (outer g positions; inner is transform-free for the pop)
+    if (ch.camile) {
+      s += '<g transform="translate(' + ch.camile.x + ',' + ch.camile.y + ') scale(0.95)">'
+        + '<g id="hiddenCamile" class="hotspot">' + camileBadge() + '</g></g>';
+    }
+
+    s += '</svg>';
+    return s;
   }
 
   function defs() {
