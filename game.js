@@ -141,6 +141,26 @@
       + '  •  ' + (camileFound ? 'Camile ✓' : 'Camile …');
   }
 
+  // Swap the painted background, waiting until the image is decoded.
+  function setSceneBg(url, done) {
+    var bg = byId('bg');
+    if (!url) { bg.style.backgroundImage = 'none'; if (done) done(); return; }
+    var img = new Image();
+    img.onload = img.onerror = function () { bg.style.backgroundImage = 'url("' + url + '")'; if (done) done(); };
+    img.src = url;
+  }
+  function hideLoading() {
+    var l = byId('loading');
+    if (l && !l.classList.contains('hide')) {
+      l.classList.add('hide');
+      setTimeout(function () { if (l.parentNode) l.parentNode.removeChild(l); }, 600);
+    }
+  }
+  function preloadNext() {
+    var n = CHAPTERS[cur + 1]; if (!n) return;
+    var a = assets[n.id]; if (a && a.bg) { var im = new Image(); im.src = a.bg; }
+  }
+
   // ── Load a chapter ──
   function loadChapter(i) {
     cur = Math.max(0, Math.min(CHAPTERS.length - 1, i));
@@ -149,13 +169,18 @@
     collected = 0; total = (ch.items || []).length;
     camileFound = !!save.camiles[ch.id];
     sceneEl.style.transform = 'scale(1)';
+    sceneEl.style.opacity = '0';          // fade in once the bg is ready
     sightsBox.style.display = 'none';
 
     stage.innerHTML = art.scene(ch);
 
     var A = assets[ch.id] || {};
-    byId('bg').style.backgroundImage = A.bg ? 'url("' + A.bg + '")' : 'none';
     audio.setMusic(A.music || null);
+    setSceneBg(A.bg, function () {
+      requestAnimationFrame(function () { sceneEl.style.opacity = '1'; });
+      hideLoading();
+      preloadNext();
+    });
 
     wireHiddenCamile();
     updateProgress();

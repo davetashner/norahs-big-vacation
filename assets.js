@@ -9,26 +9,26 @@ window.NVassets = {
     music: 'assets/music/london-stroll.m4a'
   },
 
-  // ⏳ backgrounds/music ready, chapters not built yet
+  // chapters use placeholder music (reused tracks) until bespoke ones exist
   pups: {
-    bg: 'assets/images/home-richmond.png'
-    // music: TODO (cozy home / goodbye theme)
+    bg: 'assets/images/home-richmond.png',
+    music: 'assets/music/richmond-home.mp3'      // placeholder: cozy home theme
   },
   airport: {
     bg: 'assets/images/richmond-airport.png',
     music: 'assets/music/airport-music.mp3'
   },
   nyc: {
-    bg: 'assets/images/plane-ride-nyc.png'
-    // music: TODO (flight theme)
+    bg: 'assets/images/plane-ride-nyc.png',
+    music: 'assets/music/chunnel-adventure.m4a'  // placeholder: travel/adventure
   },
   overnight: {
-    bg: 'assets/images/plane-ride-night.png'
-    // music: TODO (sleepy night-flight theme)
+    bg: 'assets/images/plane-ride-night.png',
+    music: 'assets/music/leeds-castle-evening.m4a' // placeholder: calm night theme
   },
   train: {
-    bg: 'assets/images/london-train-station.png'
-    // music: TODO (train theme)
+    bg: 'assets/images/london-train-station.png',
+    music: 'assets/music/london-stroll.m4a'       // placeholder: London theme
   },
   london: {
     bg: 'assets/images/county-hall-hotel.png',
@@ -53,12 +53,12 @@ window.NVassets = {
     music: 'assets/music/paris-bakery.m4a'
   },
   home: {
-    // placeholder bg: reuse the daytime airport until a richmond-airport-evening
-    // (reunion) background is generated.
-    bg: 'assets/images/richmond-airport.png',
+    // reunion at home with the pups — reuse the cozy home scene (better than the
+    // airport for the "we're home!" beat) until a dedicated reunion bg exists.
+    bg: 'assets/images/home-richmond.png',
     music: 'assets/music/richmond-home.mp3'
   }
 
-  // ❌ still missing: a dedicated 'home' evening/reunion background, and music
-  //    for pups / nyc / overnight / train.
+  // ⚠️ placeholders in use: music for pups/nyc/overnight/train reuse existing
+  //    tracks; home reuses the home-richmond scene. Swap in bespoke assets later.
 };

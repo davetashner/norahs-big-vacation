@@ -13,6 +13,13 @@
 <!-- ════════ Game root ════════ -->
 <div id="app">
 
+  <!-- First-load splash (removed once the first scene is ready) -->
+  <div id="loading">
+    <div class="loader-ring" aria-hidden="true"></div>
+    <div class="loader-text">Norah&apos;s Big Vacation</div>
+    <div class="loader-sub">Packing the suitcase… 🧳</div>
+  </div>
+
   <!-- Scene: painted background + transparent SVG overlay. Zoomed together so
        tappable hotspots stay aligned with the artwork. -->
   <div id="scene">
@@ -67,5 +74,13 @@
 <script src="assets.js"></script>
 <script src="audio.js"></script>
 <script src="game.js"></script>
+<script>
+  // Register the offline service worker (works on a plane after one load).
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').catch(function () { /* offline still fine without it */ });
+    });
+  }
+</script>
 </body>
 </html>
