@@ -114,8 +114,17 @@
   // ── Per-chapter state ──
   var cur = 0;            // current chapter index
   var ch = null;          // current chapter config
-  var phase = 'intro';    // intro -> (ride) -> collect -> done
+  var phase = 'intro';    // intro -> (ride) -> explore -> done
   var collected = 0, total = 0, camileFound = false;
+
+  // ── Player movement (Norah walks; Camile follows) ──
+  var WALK = 2.6;                  // viewBox units per frame
+  var GROUND_Y = 662;             // default feet line
+  var canMove = false;
+  var tick = 0;
+  var player = { x: 200, y: GROUND_Y, tx: 200, ty: GROUND_Y, face: 1, moving: false };
+  var cami = { x: 240, y: GROUND_Y };
+  var itemsDone = [];             // collected flags per item index
 
   // ── Helpers ──
   function say(t) { narration.style.display = ''; narration.innerHTML = t; }
@@ -182,11 +191,21 @@
       preloadNext();
     });
 
+    // init the playable characters at the bottom (Norah at her chars-entry x)
+    canMove = false;
+    itemsDone = (ch.items || []).map(function () { return false; });
+    var nEntry = (ch.chars || []).filter(function (c) { return c.name === 'norah'; })[0];
+    player.x = nEntry ? nEntry.x : 200; player.y = GROUND_Y;
+    player.tx = player.x; player.ty = player.y; player.face = 1; player.moving = false;
+    cami.x = player.x - 40; cami.y = player.y;
+    placeMover('m-norah', player.x, player.y, 1);
+    placeMover('m-camile', cami.x, cami.y, 1);
+
     wireHiddenCamile();
     updateProgress();
 
     say('<b>Chapter ' + (cur + 1) + ': ' + ch.name + '</b> ' + ch.glyph + '<br>' + ch.intro);
-    setAction("Let's go!", ch.ride ? doRide : beginCollect);
+    setAction("Let's go!", ch.ride ? doRide : beginExplore);
   }
 
   // ── Optional "ride" beat (London Eye) ──
@@ -203,39 +222,23 @@
       sceneEl.style.transformOrigin = '46% 36%';
       sceneEl.style.transform = 'scale(1.85)';
       setTimeout(function () { sceneEl.style.transform = 'scale(1)'; }, 1300);
-      setTimeout(function () { hide('ride-wheel'); beginCollect(); }, 2300);
+      setTimeout(function () { hide('ride-wheel'); beginExplore(); }, 2300);
     };
   }
 
-  // ── Collect loop ──
-  function beginCollect() {
-    phase = 'collect';
-    say('Tap the <b>' + total + ' ' + ch.task + '</b>! 🔎 (and find the hidden Camile)');
-    (ch.items || []).forEach(function (it, i) {
-      var el = byId('item-' + i);
-      if (!el) return;
-      el.onclick = function () {
-        if (el.classList.contains('collected')) return;
-        el.classList.add('collected');
-        collected++; audio.play('collect');
-        toast(el, '+1', '#fff');
-        updateProgress(); checkComplete();
-      };
-    });
+  // ── Explore: walk Norah around to collect ──
+  function beginExplore() {
+    phase = 'explore';
+    canMove = true;
+    say('Tap where <b>Norah</b> should walk! 🚶 Walk into the <b>' + ch.task
+      + '</b> to collect them, and find the hidden Camile. 🔎');
     updateProgress();
   }
 
+  // hidden Camile is found by walking near it (see checkProximity)
   function wireHiddenCamile() {
     var hc = byId('hiddenCamile');
-    if (!hc) return;
-    if (camileFound) hc.classList.add('spotted');
-    hc.onclick = function () {
-      if (camileFound) return;
-      camileFound = true; save.camiles[ch.id] = true; persist();
-      hc.classList.add('spotted'); audio.play('found');
-      toast(hc, '✨ Camile!', '#ffd25a');
-      updateProgress(); checkComplete();
-    };
+    if (hc && camileFound) hc.classList.add('spotted');
   }
 
   function checkComplete() {
@@ -293,6 +296,75 @@
     byId('celebrate').style.display = 'flex';
   }
 
+  // ── Movement engine ──
+  // Map a screen tap to viewBox coords (svg uses xMidYMid slice → cover-fit).
+  function mapTap(clientX, clientY) {
+    var r = stage.getBoundingClientRect();
+    var sc = Math.max(r.width / 400, r.height / 700);
+    var ox = (r.width - 400 * sc) / 2, oy = (r.height - 700 * sc) / 2;
+    return { x: (clientX - r.left - ox) / sc, y: (clientY - r.top - oy) / sc };
+  }
+  function overlayOpen() {
+    return byId('passport').style.display === 'flex' || byId('celebrate').style.display === 'flex';
+  }
+  function onSceneTap(e) {
+    if (!canMove || overlayOpen()) return;
+    var pt = (e.touches && e.touches[0]) || e;
+    var p = mapTap(pt.clientX, pt.clientY);
+    player.tx = Math.max(20, Math.min(380, p.x));
+    player.ty = Math.max(120, Math.min(686, p.y));
+    audio.unlock();
+  }
+  // Position a movable character: feet at (x,y), mirrored by `face`, with a walk bob.
+  function placeMover(id, x, y, face, bob) {
+    var el = byId(id); if (!el) return;
+    el.setAttribute('transform', 'translate(' + x.toFixed(1) + ',' + (y + (bob || 0)).toFixed(1) + ') scale(' + face + ',1)');
+  }
+  function dist(ax, ay, bx, by) { var dx = ax - bx, dy = ay - by; return Math.sqrt(dx * dx + dy * dy); }
+
+  function checkProximity() {
+    var bx = player.x, by = player.y - 45; // Norah's torso
+    (ch.items || []).forEach(function (it, i) {
+      if (itemsDone[i]) return;
+      if (dist(bx, by, it.x, it.y) < 54) {
+        itemsDone[i] = true; collected++;
+        var el = byId('item-' + i); if (el) el.classList.add('collected');
+        audio.play('collect'); if (el) toast(el, '+1', '#fff');
+        updateProgress(); checkComplete();
+      }
+    });
+    if (!camileFound && ch.camile && dist(bx, by, ch.camile.x, ch.camile.y) < 54) {
+      camileFound = true; save.camiles[ch.id] = true; persist();
+      var hc = byId('hiddenCamile'); if (hc) { hc.classList.add('spotted'); toast(hc, '✨ Camile!', '#ffd25a'); }
+      audio.play('found'); updateProgress(); checkComplete();
+    }
+  }
+
+  function loop() {
+    tick++;
+    if (canMove) {
+      // Norah walks toward the tapped target
+      var dx = player.tx - player.x, dy = player.ty - player.y, d = Math.sqrt(dx * dx + dy * dy);
+      player.moving = d > 2;
+      if (player.moving) {
+        var step = Math.min(WALK, d);
+        player.x += dx / d * step; player.y += dy / d * step;
+        if (dx < -0.4) player.face = -1; else if (dx > 0.4) player.face = 1;
+      }
+      // Camile follows a little behind, on Norah's trailing side
+      var ctx = player.x - 34 * player.face, cty = player.y;
+      var cdx = ctx - cami.x, cdy = cty - cami.y, cd = Math.sqrt(cdx * cdx + cdy * cdy);
+      var caMoving = cd > 6;
+      if (caMoving) { var cs = Math.min(WALK * 0.95, cd); cami.x += cdx / cd * cs; cami.y += cdy / cd * cs; }
+      var bob = player.moving ? Math.sin(tick * 0.35) * 2.5 : 0;
+      var cbob = caMoving ? Math.sin(tick * 0.35 + 1) * 2.5 : 0;
+      placeMover('m-norah', player.x, player.y, player.face, bob);
+      placeMover('m-camile', cami.x, cami.y, player.face, cbob);
+      checkProximity();
+    }
+    requestAnimationFrame(loop);
+  }
+
   // ── Mute ──
   function refreshMute() { byId('muteBtn').textContent = audio.isMuted() ? '🔇' : '🔊'; }
 
@@ -311,10 +383,14 @@
     byId('muteBtn').onclick = function () { audio.toggleMute(); refreshMute(); };
     refreshMute();
 
+    // tap the scene to walk Norah there
+    sceneEl.addEventListener('pointerdown', onSceneTap);
+
     // resume at the first chapter without a stamp
     var start = 0;
     for (var i = 0; i < CHAPTERS.length; i++) { if (!save.stamps[CHAPTERS[i].id]) { start = i; break; } }
     loadChapter(start);
+    requestAnimationFrame(loop);
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);

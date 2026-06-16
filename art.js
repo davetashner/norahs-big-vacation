@@ -107,7 +107,7 @@
   var SPRITE_SCALE = 0.196; // tune overall character size on screen
   // per-character display scale (corrects for different sprite framing)
   var BASE = { camile: 0.78 };
-  // Place a sprite by its FEET point (feetX, feetY) in viewBox coords.
+  // Place a STATIC sprite by its FEET point (feetX, feetY) in viewBox coords.
   function sprite(name, feetX, feetY, scaleMul) {
     var d = DIMS[name]; if (!d) return '';
     var s = SPRITE_SCALE * (BASE[name] || 1) * (scaleMul || 1);
@@ -115,6 +115,21 @@
     return '<image href="' + SPRITE + 'char-' + name + '.png" x="' + (feetX - w / 2).toFixed(1)
       + '" y="' + (feetY - h).toFixed(1) + '" width="' + w.toFixed(1) + '" height="' + h.toFixed(1)
       + '" preserveAspectRatio="xMidYMax meet"/>';
+  }
+
+  // On-screen pixel size of a sprite (for movement/proximity math).
+  function size(name) {
+    var d = DIMS[name]; var s = SPRITE_SCALE * (BASE[name] || 1);
+    return { w: d[0] * s, h: d[1] * s };
+  }
+  // A MOVABLE character: image drawn around its feet origin (0,0) so game.js
+  // can position it with transform="translate(x,y) scale(face,1)".
+  function movable(name) {
+    var sz = size(name);
+    return '<g class="mover" id="m-' + name + '">'
+      + '<image href="' + SPRITE + 'char-' + name + '.png" x="' + (-sz.w / 2).toFixed(1)
+      + '" y="' + (-sz.h).toFixed(1) + '" width="' + sz.w.toFixed(1) + '" height="' + sz.h.toFixed(1)
+      + '" preserveAspectRatio="xMidYMax meet"/></g>';
   }
 
   // ── Generic chapter OVERLAY, built from chapter data ──
@@ -128,9 +143,12 @@
     // optional "ride" tap target (London Eye)
     if (ch.ride) s += hotspotRect('ride-wheel', 110, 150, 150, 245) + marker('mark-ride', 185, 262, 70);
 
-    // characters along the bottom
+    // static NPCs along the bottom (everyone except the playable Norah & Camile)
     s += '<g id="chars">';
-    (ch.chars || []).forEach(function (c) { s += sprite(c.name, c.x, c.y != null ? c.y : 668, c.scale); });
+    (ch.chars || []).forEach(function (c) {
+      if (c.name === 'norah' || c.name === 'camile') return;
+      s += sprite(c.name, c.x, c.y != null ? c.y : 668, c.scale);
+    });
     s += '</g>';
 
     // collectible items (emoji tokens with a pulsing ring)
@@ -149,6 +167,9 @@
       s += '<g transform="translate(' + ch.camile.x + ',' + ch.camile.y + ') scale(0.95)">'
         + '<g id="hiddenCamile" class="hotspot">' + camileBadge() + '</g></g>';
     }
+
+    // playable characters (Camile follows behind, so draw her first; Norah on top)
+    s += movable('camile') + movable('norah');
 
     s += '</svg>';
     return s;
