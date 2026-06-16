@@ -101,12 +101,13 @@
   // Pixel dims preserve relative scale; SPRITE_SCALE maps px -> viewBox units.
   var SPRITE = 'assets/images/sprites/';
   var DIMS = {
-    norah: [204, 628], camile: [268, 617], mommo: [258, 814],
+    norah: [204, 628], camile: [330, 655], mommo: [258, 814],
     daddo: [277, 919], penny: [185, 429], obi: [278, 378]
   };
   var SPRITE_SCALE = 0.196; // tune overall character size on screen
-  // per-character display scale (corrects for different sprite framing)
-  var BASE = { camile: 0.78 };
+  // per-character display scale (corrects for different sprite framing). Camile's
+  // frames share a 330×655 walk-cycle canvas, so she needs a smaller multiplier.
+  var BASE = { camile: 0.73 };
   // Place a STATIC sprite by its FEET point (feetX, feetY) in viewBox coords.
   function sprite(name, feetX, feetY, scaleMul) {
     var d = DIMS[name]; if (!d) return '';

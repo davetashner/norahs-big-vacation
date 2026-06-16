@@ -126,6 +126,12 @@
   var cami = { x: 240, y: GROUND_Y };
   var itemsDone = [];             // collected flags per item index
 
+  // Camile walk-cycle frames (idle vs two strides), swapped while she moves
+  var SPR = 'assets/images/sprites/';
+  var CAMI_IDLE = SPR + 'char-camile.png';
+  var CAMI_WALK = [SPR + 'char-camile-walk-a.png', SPR + 'char-camile-walk-b.png'];
+  var camiImg = null, camiHref = '';
+
   // ── Helpers ──
   function say(t) { narration.style.display = ''; narration.innerHTML = t; }
   function hideSay() { narration.style.display = 'none'; }
@@ -200,6 +206,7 @@
     cami.x = player.x - 40; cami.y = player.y;
     placeMover('m-norah', player.x, player.y, 1);
     placeMover('m-camile', cami.x, cami.y, 1);
+    var cg = byId('m-camile'); camiImg = cg ? cg.querySelector('image') : null; camiHref = '';
 
     wireHiddenCamile();
     updateProgress();
@@ -360,6 +367,11 @@
       var cbob = caMoving ? Math.sin(tick * 0.35 + 1) * 2.5 : 0;
       placeMover('m-norah', player.x, player.y, player.face, bob);
       placeMover('m-camile', cami.x, cami.y, player.face, cbob);
+      // animate Camile's walk cycle (idle frame when standing still)
+      if (camiImg) {
+        var want = caMoving ? CAMI_WALK[Math.floor(tick / 7) % 2] : CAMI_IDLE;
+        if (want !== camiHref) { camiImg.setAttribute('href', want); camiHref = want; }
+      }
       checkProximity();
     }
     requestAnimationFrame(loop);
