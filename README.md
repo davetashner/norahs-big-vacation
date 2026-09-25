@@ -10,25 +10,43 @@ directly in a browser, or deploy the repo as static hosting (GitHub Pages /
 Vercel / Netlify).
 
 ## Status
-**All 12 chapters playable** end to end (data-driven). Chapter 5 (London Eye) has
-a bonus "ride up" zoom. Backgrounds + characters are in; a few music tracks and a
-dedicated reunion background are still TODO (see `assets.js`).
+**All 12 chapters playable** end to end, each with its own mini-game. Chapter 8
+(Leeds Castle) fades from day to evening mid-chapter. A dedicated reunion
+background and a few bespoke music tracks are still TODO (see `assets.js`).
 
 ## How it plays
-Everything is a tap. Each chapter: read the intro → tap the themed items (paw
-prints, clouds, swans, croissants…) → find the hidden Camile → earn a **passport
-stamp** → on to the next chapter. The passport (📖) shows all stamps and doubles
-as a chapter picker. Progress saves to `localStorage`.
+Everything is a tap (or a drag). Each chapter: read the story card, play that
+place's mini-game, earn **1–3 stars** and a **passport stamp**, then travel on.
+Camile hides in every painting (peeking out from somewhere); finding her is a
+bonus, never required. There is no losing: every game finishes, and stars
+reward how well it went, so it's worth replaying. The passport (📖) shows the
+stamps, stars and Camiles found, and doubles as a chapter picker. Progress
+saves to `localStorage`.
+
+| # | Chapter | Mini-game |
+| --- | --- | --- |
+| 1 | Goodbye Pups | Drag Norah's things into the suitcase and the pups' toys onto their bed, then hug Penny and Obi |
+| 2 | To the Airport | Spot our family's bags (colour + sticker) on the moving baggage belt |
+| 3 | Fly to New York | Hold to climb, let go to glide; catch stars and dodge birds |
+| 4 | Night Flight | Join the stars 1, 2, 3… to draw a house, a heart, a crown and a star |
+| 5 | The London Eye | Tap to snap a photo when our pod reaches the very top |
+| 6 | Daddo's Train | Find Daddo in the passing train windows and blow him kisses |
+| 7 | London & Mommo | Postcard memory match, with a fun London fact for each pair |
+| 8 | Leeds Castle | Count the swans, then (at sunset) repeat the lantern light pattern |
+| 9 | The Chunnel | Switch tracks under the sea to grab lights and dodge cones |
+| 10 | Eiffel Tower | Tap the rings on the beat to play "Frère Jacques" and make the tower sparkle |
+| 11 | Croissants | Catch falling pastries (not pigeons!), then pick Norah's favourite macaron |
+| 12 | Fly Home | Press and hold each pup for a welcome-home hug, then pop balloons |
 
 ## Files (no build step, plain `<script>` globals)
 | File | Role |
 | --- | --- |
-| `index.html` | Markup: `#scene` (painted `#bg` + SVG `#stage` overlay), `<audio>`, overlays |
-| `styles.css` | Mobile-first layout, animations, scene zoom |
-| `art.js` | `window.NVart` — SVG **overlay** (tap hotspots, guide rings, characters) |
-| `assets.js` | `window.NVassets` — manifest: chapter → background image + music file |
-| `audio.js` | `window.NVaudio` — Web Audio SFX **+** looping `<audio>` music; mute controls both |
-| `game.js` | `CHAPTERS`/`SIGHTS` data, the London Eye state machine, passport, save |
+| `index.html` | Markup: `#scene` (painted `#bg`/`#bg2` + game `<canvas>`), `<audio>`, overlays |
+| `styles.css` | Mobile-first layout, story card, buttons, passport, celebration |
+| `assets.js` | `window.NVassets`: chapter → background image + music file |
+| `audio.js` | `window.NVaudio`: Web Audio SFX **+** looping `<audio>` music; mute controls both |
+| `games.js` | `window.NVgames`: the 12 mini-games |
+| `game.js` | Chapters, the canvas runner and drawing helpers, hidden Camile, stars, passport, save |
 
 ## Assets
 `assets/images/*.png` are full **painted backgrounds** (portrait 4:7, same ratio as
@@ -37,11 +55,15 @@ chapter themes. Wire a new file by adding it to `assets/` and referencing it in
 `assets.js`. The background and overlay live in `#scene` and zoom together, so
 hotspot taps stay aligned with the artwork even during the "ride up" zoom.
 
-## Adding the other chapters
-`game.js` is structured around a phase state machine and a `CHAPTERS` array. To
-add a chapter: build its scene in `art.js`, add its `SIGHTS`/collectibles + phase
-flow in `game.js`, and reuse the passport + hidden-Camile + celebration systems.
-See `GAME_SPEC.md` in this repo for the full 12-chapter design.
+## Adding or changing a mini-game
+Everything moving is drawn on one canvas in the painting's own **400×700**
+coordinates (`game.js` cover-fits both the painting and the canvas to the
+screen, so they always line up). A mini-game is a factory in `games.js`:
+`NVgames.name = function (api) { return { update(dt), draw(ctx), down(p), move(p), up(p) }; }`.
+`api` gives drawing helpers (`emoji`, `sprite`, `text`, `rr`, `burst`, `float`),
+`sfx`, `tip`, `hud`, `choices`, `after`, `setBg`, `zoom`, the visible play area
+`api.S`, and `finish(stars, line)`. Point a chapter at it with `game:` in
+`CHAPTERS` (`game.js`), along with where Camile hides.
 
 ## Characters
 Norah (brown bob, hot-pink dress) · Camile (blonde, pink tutu, teal boots) ·
