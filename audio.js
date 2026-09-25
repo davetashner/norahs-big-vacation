@@ -43,6 +43,24 @@
     osc.stop(t0 + dur + 0.02);
   }
 
+  // A short burst of filtered noise (whooshes, camera shutter, woofs).
+  function noise(dur, f0, f1, vol, delay) {
+    if (muted) return;
+    var c = ensure();
+    if (!c) return;
+    var t0 = c.currentTime + (delay || 0);
+    var len = Math.max(1, Math.floor(c.sampleRate * dur));
+    var buf = c.createBuffer(1, len, c.sampleRate), d = buf.getChannelData(0);
+    for (var i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    var src = c.createBufferSource(); src.buffer = buf;
+    var bq = c.createBiquadFilter(); bq.type = 'bandpass'; bq.Q.value = 1.2;
+    bq.frequency.setValueAtTime(f0, t0); bq.frequency.exponentialRampToValueAtTime(Math.max(1, f1), t0 + dur);
+    var g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(vol || 0.2, t0 + dur * 0.2); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    src.connect(bq).connect(g).connect(c.destination);
+    src.start(t0); src.stop(t0 + dur + 0.02);
+  }
+
   var SFX = {
     tap: function () { tone(520, 660, 0.08, 'sine', 0.14); },
     spin: function () { tone(300, 520, 0.12, 'triangle', 0.12); },
@@ -56,6 +74,19 @@
       tone(1175, 1175, 0.12, 'triangle', 0.14, 0.1);
       tone(1568, 1568, 0.16, 'triangle', 0.13, 0.22);
     },
+    // arg: pitch in Hz
+    note: function (f) { f = f || 660; tone(f, f, 0.32, 'triangle', 0.2); tone(f * 2, f * 2, 0.2, 'sine', 0.05); },
+    pop: function (f) { f = f || 800; tone(f, f * 1.8, 0.09, 'sine', 0.16); },
+    wrong: function () { tone(330, 220, 0.2, 'triangle', 0.14); },
+    boing: function () { tone(220, 520, 0.14, 'sine', 0.18); tone(520, 260, 0.2, 'sine', 0.14, 0.13); },
+    bump: function () { tone(140, 60, 0.22, 'square', 0.12); noise(0.15, 400, 150, 0.12); },
+    flip: function () { tone(700, 500, 0.06, 'sine', 0.08); },
+    kiss: function () { tone(900, 1500, 0.1, 'sine', 0.14); tone(1300, 1800, 0.08, 'sine', 0.1, 0.1); },
+    hug: function () { tone(392, 523, 0.25, 'triangle', 0.16); tone(523, 659, 0.3, 'triangle', 0.16, 0.2); tone(659, 784, 0.4, 'triangle', 0.14, 0.42); },
+    honk: function () { tone(440, 380, 0.16, 'sawtooth', 0.08); tone(440, 380, 0.2, 'sawtooth', 0.08, 0.22); },
+    woof: function () { noise(0.12, 900, 300, 0.25); tone(260, 150, 0.12, 'square', 0.1); },
+    whoosh: function () { noise(0.9, 200, 2500, 0.22); },
+    shutter: function () { noise(0.05, 3000, 2000, 0.3); noise(0.06, 2000, 1200, 0.25, 0.08); },
     stamp: function () {
       tone(180, 70, 0.16, 'square', 0.22);
       tone(120, 50, 0.2, 'sine', 0.16, 0.02);
@@ -68,7 +99,9 @@
   };
 
   window.NVaudio = {
-    play: function (name) { if (SFX[name]) SFX[name](); },
+    play: function (name, arg) { if (SFX[name]) SFX[name](arg); },
+    // background music volume (0–1); games lower it when they play their own tune
+    setVolume: function (v) { var m = musicEl(); if (m) m.volume = Math.max(0, Math.min(1, v)); },
     isMuted: function () { return muted; },
     toggleMute: function () {
       muted = !muted;

@@ -5,7 +5,7 @@
 > back. Built for Norah (age 7–8, confident reader) to play on a **mobile browser
 > on the plane**. Deployed on **norahtashner.com**.
 
-- **Spec status:** Draft (decisions locked, character details pending)
+- **Spec status:** Built. Each chapter's activity is now a mini-game (see README for the list); stars (1–3) were added per chapter for replay value.
 - **Last updated:** 2026-06-14
 - **For:** Norah
 - **Companion:** Camile, her doll

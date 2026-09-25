@@ -10,7 +10,6 @@
 </head>
 <body>
 
-<!-- ════════ Game root ════════ -->
 <div id="app">
 
   <!-- First-load splash (removed once the first scene is ready) -->
@@ -20,60 +19,70 @@
     <div class="loader-sub">Packing the suitcase… 🧳</div>
   </div>
 
-  <!-- Scene: painted background + transparent SVG overlay. Zoomed together so
-       tappable hotspots stay aligned with the artwork. -->
+  <!-- Scene: the painted background (two layers for cross-fades) with the game
+       canvas on top, in the same 400×700 coordinates. Zoomed together. -->
   <div id="scene">
-    <div id="bg"></div>
-    <div id="stage" aria-label="Scene overlay"></div>
+    <div id="bg" class="bg"></div>
+    <div id="bg2" class="bg"></div>
+    <canvas id="play" aria-label="Game scene"></canvas>
   </div>
 
   <!-- Looping background music (src set per chapter by game.js) -->
   <audio id="music" loop preload="auto"></audio>
 
-  <!-- Top bar: passport + mute -->
+  <!-- Top bar: passport + progress + mute -->
   <div id="topbar">
-    <button id="passportBtn" class="iconbtn" aria-label="Open passport" title="Passport">📖</button>
+    <button id="passportBtn" class="iconbtn" type="button" aria-label="Open passport" title="Passport">📖</button>
     <div id="progressPill" aria-live="polite"></div>
-    <button id="muteBtn" class="iconbtn" aria-label="Toggle sound" title="Sound">🔊</button>
+    <button id="muteBtn" class="iconbtn" type="button" aria-label="Toggle sound" title="Sound">🔊</button>
   </div>
 
-  <!-- Narration / prompt -->
-  <div id="narration" aria-live="polite"></div>
+  <!-- Short in-game hints under the top bar -->
+  <div id="tip" aria-live="polite" hidden></div>
 
-  <!-- Action button (Let's go / Next, etc.) -->
-  <button id="actionBtn" class="bigbtn" style="display:none"></button>
+  <!-- Chapter story card -->
+  <div id="narration" aria-live="polite" hidden></div>
 
-  <!-- Sights checklist (during the "spot the sights" step) -->
-  <div id="sights" style="display:none"></div>
+  <!-- Answer buttons (counting swans, picking a macaron) -->
+  <div id="choices" hidden></div>
+
+  <!-- Action button (Let's go!) -->
+  <button id="actionBtn" class="bigbtn" type="button" hidden></button>
 
   <!-- Passport overlay -->
-  <div id="passport" class="overlay" style="display:none" role="dialog" aria-label="Passport">
+  <div id="passport" class="overlay" role="dialog" aria-label="Passport" hidden>
     <div class="passport-book">
       <h2>Norah&apos;s Passport</h2>
-      <p class="passport-sub">Collect a stamp on every adventure!</p>
+      <p class="passport-sub">A stamp for every adventure. Tap one to play it again!</p>
+      <p id="passportTotals" class="passport-totals"></p>
       <div id="stampGrid"></div>
-      <button id="closePassport" class="bigbtn">Close</button>
-      <button id="resetBtn" class="bigbtn ghost">Start Over</button>
+      <button id="closePassport" class="bigbtn" type="button">Close</button>
+      <button id="resetBtn" class="bigbtn ghost" type="button">Start Over</button>
     </div>
   </div>
 
-  <!-- Celebration overlay -->
-  <div id="celebrate" class="overlay" style="display:none" role="dialog" aria-label="Chapter complete">
+  <!-- Chapter complete overlay -->
+  <div id="celebrate" class="overlay" role="dialog" aria-label="Chapter complete" hidden>
     <div class="celebrate-card">
       <div class="confetti" aria-hidden="true"></div>
       <div id="celebrateStamp"></div>
       <h2 id="celebrateTitle">Chapter Complete!</h2>
+      <div id="celebrateStars" class="big-stars" aria-label="Stars"></div>
       <p id="celebrateText"></p>
-      <button id="celebratePassport" class="bigbtn">See my Passport</button>
-      <button id="celebrateNext" class="bigbtn ghost"></button>
+      <p id="celebrateCamile" class="cam-line"></p>
+      <button id="celebrateNext" class="bigbtn" type="button"></button>
+      <div class="celebrate-row">
+        <button id="celebrateAgain" class="bigbtn ghost small" type="button">Play again</button>
+        <button id="celebratePassport" class="bigbtn ghost small" type="button">Passport</button>
+      </div>
     </div>
   </div>
 
 </div>
 
-<script src="art.js"></script>
 <script src="assets.js"></script>
 <script src="audio.js"></script>
+<script src="games.js"></script>
 <script src="game.js"></script>
 <script>
   // Register the offline service worker (works on a plane after one load).
